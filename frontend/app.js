@@ -1089,10 +1089,15 @@ async function checkAuthStatus() {
             syncBtn.classList.remove("btn-primary");
             syncBtn.classList.add("btn-secondary");
         } else {
-            syncBtn.textContent = authStatus.has_client_credentials ? "Login & Sync" : "Login & Sync";
+            syncBtn.innerHTML = authStatus.has_client_credentials ? '<i data-lucide="log-in"></i><span>Login & Sync</span>' : '<i data-lucide="log-in"></i><span>Setup & Login</span>';
             syncBtn.classList.add("btn-primary");
             syncBtn.classList.remove("btn-secondary");
         }
+    }
+    
+    if (!authStatus.has_client_credentials) {
+      document.getElementById("yt-connect-modal").classList.remove("hidden");
+      if (typeof lucide !== "undefined") lucide.createIcons();
     }
   } catch(e) {
     console.error("Auth status error", e);
