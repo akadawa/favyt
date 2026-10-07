@@ -1,9 +1,8 @@
-﻿# FAVYT
+# FAVYT
 
 <p align="center">
   <img src="frontend/favicon.png" width="128" alt="FAVYT Logo">
 </p>
-
 
 **FAVYT** (Favorite YouTube) is a clean, dark-mode, personal YouTube favorites and custom playlist manager web application. 
 
@@ -14,7 +13,7 @@ YouTube's native interface is heavily optimized to keep you scrolling through an
 
 ---
 
-##  Screenshots
+## Screenshots
 
 *(Add your screenshots here later)*
 <!-- Example: ![Home Screen](docs/home.png) -->
@@ -22,9 +21,9 @@ YouTube's native interface is heavily optimized to keep you scrolling through an
 
 ---
 
-##  Features
+## Features
 
-- **Collapsible Sidebar ():** Smooth drawer navigation with prominent, easy-to-read typography.
+- **Collapsible Sidebar:** Smooth drawer navigation with prominent, easy-to-read typography.
 - **Smart Sorting:** *Favorites* pinned at the top, followed by your custom playlists sorted chronologically by the newest added video.
 - **High-Speed Parallel YouTube Sync:** Uses multi-threaded fetching to sync hundreds of videos and dozens of playlists in seconds.
 - **Two-Way Delete Synchronization:** Deleting a video in FAVYT automatically removes it from the playlist or unlikes it on YouTube.
@@ -35,16 +34,18 @@ YouTube's native interface is heavily optimized to keep you scrolling through an
 
 ---
 
-##  Deployment (Docker)
+## Deployment (Docker)
 
 The easiest and recommended way to deploy FAVYT is using Docker. By default, the application runs on port **8245** (to avoid conflicts with standard ports like 8080 or 3000).
 
 ### Option 1: Docker Compose (Recommended)
 
-You can run the application easily using docker-compose. 
-You don't even need to clone the repository - you can just use the pre-built image from Docker Hub. Create a docker-compose.yml file with the following configuration:
+You can run the application easily using `docker-compose`. 
+You don't even need to clone the repository - you can just use the pre-built image from Docker Hub. Create a `docker-compose.yml` file with the following configuration:
 
-`yaml
+```yaml
+version: '3.8'
+
 services:
   favyt:
     image: akadawa/favyt:latest
@@ -57,16 +58,16 @@ services:
     environment:
       - DATA_DIR=/app/data
       - TZ=Europe/Berlin
-`
+```
 
 **Steps to start:**
-1. Create an empty folder for the project on your host machine.
-2. Inside that folder, create the docker-compose.yml file and paste the code above into it.
+1. Create a folder for the project on your host machine.
+2. Inside that folder, create the `docker-compose.yml` file and paste the code above into it.
 3. Open a terminal in that folder and run:
 
-`ash
+```bash
 docker compose up -d
-`
+```
 
 ### Option 2: Manual Docker Build & Run
 
@@ -86,7 +87,7 @@ docker run -d \
 
 ---
 
-##  Google YouTube Data API Setup
+## Google YouTube Data API Setup
 
 To enable synchronization with your personal YouTube account, you **must** create a project in the Google Cloud Console and configure an OAuth client. **If you skip adding the exact Redirect URI, the login will not work!**
 
@@ -113,7 +114,7 @@ To enable synchronization with your personal YouTube account, you **must** creat
 
 ---
 
-##  Local Development / Windows Start
+## Local Development / Windows Start
 
 If you prefer to run the application natively without Docker:
 
@@ -127,7 +128,7 @@ If you prefer to run the application natively without Docker:
 
 ---
 
-##  Volume & Data Persistence
+## Volume & Data Persistence
 
 All settings and synced playlists are stored in SQLite inside the container at `/app/data/favyt.db`.  
 Both the `docker-compose.yml` and the manual Docker run command mount a local `./data` folder to `/app/data` to ensure all data is preserved during container updates.
