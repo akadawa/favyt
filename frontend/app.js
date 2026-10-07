@@ -1144,3 +1144,147 @@ async function initApp() {
 }
 
 document.addEventListener("DOMContentLoaded", initApp);
+
+function toggleSidebar() {
+  const sidebar = document.getElementById("app-sidebar");
+  if (sidebar) {
+    sidebar.classList.toggle("collapsed");
+  }
+}
+
+async function switchPlaylist(playlistId) {
+  activePlaylistId = playlistId;
+  localStorage.setItem("favyt_active_playlist_id", playlistId);
+  
+  document.querySelectorAll(".sidebar-nav-item").forEach(el => {
+    if (el.dataset.id === playlistId) el.classList.add("active");
+    else el.classList.remove("active");
+  });
+
+  const titleEl = document.getElementById("current-view-title");
+  const countEl = document.getElementById("current-view-count");
+  if (titleEl) titleEl.textContent = "Loading...";
+  if (countEl) countEl.textContent = "";
+
+  try {
+    const res = await fetch(`/api/playlists/${playlistId}/videos?_t=${Date.now()}`);
+    if (res.ok) {
+      const data = await res.json();
+      currentVideos = data.videos || [];
+      
+      const p = playlists.find(p => p.id === playlistId);
+      if (titleEl) titleEl.textContent = p ? p.title : (playlistId === "favorites" ? "Favorites" : "Playlist");
+      if (countEl) countEl.textContent = currentVideos.length > 0 ? currentVideos.length : "";
+      
+      localStorage.setItem("favyt_active_playlist_title", titleEl.textContent);
+      
+      const input = document.getElementById("video-filter-input");
+      if (input) input.value = "";
+      applyVideoFilter();
+    }
+  } catch(e) {
+    console.error("Error switching playlist", e);
+    if (titleEl) titleEl.textContent = "Error loading videos";
+  }
+}
+
+function applyVideoFilter() {
+  const input = document.getElementById("video-filter-input");
+  const query = input ? input.value.toLowerCase() : "";
+  
+  if (!query) {
+    filteredVideos = [...currentVideos];
+  } else {
+    filteredVideos = currentVideos.filter(v => v.title.toLowerCase().includes(query) || (v.channel_title && v.channel_title.toLowerCase().includes(query)));
+  }
+  
+  renderVideoGrid();
+}
+
+function renderTabs() {
+  const nav = document.getElementById("playlist-tabs");
+  if (!nav) return;
+  
+  nav.innerHTML = '';
+  
+  const favBtn = document.createElement("a");
+  favBtn.className = "sidebar-nav-item";
+  if (activePlaylistId === "favorites") favBtn.classList.add("active");
+  favBtn.dataset.id = "favorites";
+  favBtn.innerHTML = `<i data-lucide="star"></i><span>Favorites</span>`;
+  favBtn.addEventListener("click", () => switchPlaylist("favorites"));
+  nav.appendChild(favBtn);
+
+  playlists.forEach(p => {
+    if (p.is_visible !== 0) {
+      const btn = document.createElement("a");
+      btn.className = "sidebar-nav-item";
+      if (activePlaylistId === p.id) btn.classList.add("active");
+      btn.dataset.id = p.id;
+      btn.innerHTML = `<i data-lucide="folder"></i><span title="${escapeHtml(p.title)}">${escapeHtml(p.title)}</span>`;
+      btn.addEventListener("click", () => switchPlaylist(p.id));
+      nav.appendChild(btn);
+    }
+  });
+  
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function renderCurrentPlaylist() { }
+
+function renderVideoGrid() {
+  const grid = document.getElementById("video-grid");
+  const emptyState = document.getElementById("empty-state");
+  if (!grid || !emptyState) return;
+
+  grid.innerHTML = '';
+
+  if (filteredVideos.length === 0) {
+    grid.classList.add("hidden");
+    emptyState.classList.remove("hidden");
+    return;
+  }
+
+  grid.classList.remove("hidden");
+  emptyState.classList.add("hidden");
+
+  filteredVideos.forEach((video, index) => {
+    const card = document.createElement("div");
+    card.className = "video-card";
+    
+    let progressHtml = '';
+    if (video.watch_progress > 0) {
+      progressHtml = `<div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${video.watch_progress}%"></div></div>`;
+    }
+
+    card.innerHTML = `
+      <div class="thumbnail-wrapper">
+        <img src="${video.thumbnail_url}" alt="Thumbnail">
+        ${progressHtml}
+        <button class="play-overlay" title="Play"><i data-lucide="play-circle"></i></button>
+      </div>
+      <div class="video-info">
+        <div class="video-title" title="${escapeHtml(video.title)}">${escapeHtml(video.title)}</div>
+        <div class="video-channel">${escapeHtml(video.channel_title || '')}</div>
+        <div class="video-meta">
+          <span>${formatYouTubeTimeAgo(video.published_at || '')}</span>
+          <button class="btn-delete-video" title="Remove video"><i data-lucide="trash-2"></i></button>
+        </div>
+      </div>
+    `;
+
+    card.querySelector(".thumbnail-wrapper").addEventListener("click", () => handlePlayVideo(index));
+    card.querySelector(".btn-delete-video").addEventListener("click", (e) => {
+      e.stopPropagation();
+      deleteVideo(video.video_id, video.title);
+    });
+
+    grid.appendChild(card);
+  });
+  
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function renderSidebar() {
+  renderTabs();
+}
