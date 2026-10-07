@@ -1073,3 +1073,74 @@ function updateHeaderSyncTime(lastSyncIso) {
   const timeStr = formatYouTubeTimeAgo(d);
   syncTimeEl.textContent = `Last synced: ${timeStr}`;
 }
+
+async function checkAuthStatus() {
+  try {
+    const res = await fetch("/api/auth/status?_t=" + Date.now());
+    const data = await res.json();
+    authStatus = data;
+
+    updateHeaderSyncTime(data.last_sync);
+    
+    const syncBtn = document.getElementById("btn-sync-header");
+    if (syncBtn) {
+        if (authStatus.connected) {
+            syncBtn.textContent = "Sync";
+            syncBtn.classList.remove("btn-primary");
+            syncBtn.classList.add("btn-secondary");
+        } else {
+            syncBtn.textContent = authStatus.has_client_credentials ? "Login & Sync" : "Login & Sync";
+            syncBtn.classList.add("btn-primary");
+            syncBtn.classList.remove("btn-secondary");
+        }
+    }
+  } catch(e) {
+    console.error("Auth status error", e);
+  }
+}
+
+async function loadPlaylists() {
+  try {
+    const res = await fetch("/api/playlists?_t=" + Date.now());
+    if (res.ok) {
+      playlists = await res.json();
+      renderSidebar();
+      if (activePlaylistId) {
+        switchPlaylist(activePlaylistId);
+      } else {
+        switchPlaylist("favorites");
+      }
+    }
+  } catch(e) {
+    console.error("Playlists error", e);
+  }
+}
+
+async function loadSettings() {
+  try {
+    const res = await fetch("/api/settings?_t=" + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      appSettings = data;
+      applyPlayerModalSize(appSettings.player_modal_size);
+      
+      // Initialize timer based on settings
+      const sleepVal = parseInt(appSettings.sleep_timer_minutes || 0, 10);
+      sleepTimerMinutes = sleepVal;
+      initOrUpdateSleepTimerUI();
+    }
+  } catch(e) {
+    console.error("Settings error", e);
+  }
+}
+
+async function initApp() {
+  if (typeof lucide !== "undefined") {
+    lucide.createIcons();
+  }
+  await loadSettings();
+  await checkAuthStatus();
+  await loadPlaylists();
+}
+
+document.addEventListener("DOMContentLoaded", initApp);
