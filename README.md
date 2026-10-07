@@ -41,16 +41,13 @@ The easiest and recommended way to deploy FAVYT is using Docker. By default, the
 
 ### Option 1: Docker Compose (Recommended)
 
-You can run the application easily using `docker-compose`. 
-Here is the configuration used in the `docker-compose.yml` file:
+You can run the application easily using docker-compose. 
+You don't even need to clone the repository - you can just use the pre-built image from Docker Hub. Create a docker-compose.yml file with the following configuration:
 
-```yaml
-version: '3.8'
-
+`yaml
 services:
   favyt:
-    build: .
-    image: favyt:latest
+    image: akadawa/favyt:latest
     container_name: favyt
     restart: unless-stopped
     ports:
@@ -60,24 +57,16 @@ services:
     environment:
       - DATA_DIR=/app/data
       - TZ=Europe/Berlin
-```
+`
 
 **Steps to start:**
-1. Clone or download this repository.
-2. Open a terminal in the project directory.
-3. Run the following command:
+1. Create an empty folder for the project on your host machine.
+2. Inside that folder, create the docker-compose.yml file and paste the code above into it.
+3. Open a terminal in that folder and run:
 
-```bash
-docker compose up -d --build
-```
-
-The application will be built and started in the background. 
-You can now access it at `http://localhost:8245`.
-
-To stop the container, run:
-```bash
-docker compose down
-```
+`ash
+docker compose up -d
+`
 
 ### Option 2: Manual Docker Build & Run
 
