@@ -1206,19 +1206,22 @@ function renderTabs() {
   if (!nav) return;
   
   nav.innerHTML = '';
-  
+
   const favBtn = document.createElement("a");
-  favBtn.className = "sidebar-nav-item";
+  favBtn.className = "playlist-tab";
   if (activePlaylistId === "favorites") favBtn.classList.add("active");
   favBtn.dataset.id = "favorites";
-  favBtn.innerHTML = `<i data-lucide="star"></i><span>Favorites</span>`;
+  favBtn.innerHTML = <i data-lucide="star"></i><span title="Favorites">Favorites</span>;
   favBtn.addEventListener("click", () => switchPlaylist("favorites"));
   nav.appendChild(favBtn);
+
+  
+  
 
   playlists.forEach(p => {
     if (p.is_visible !== 0) {
       const btn = document.createElement("a");
-      btn.className = "sidebar-nav-item";
+      btn.className = "playlist-tab";
       if (activePlaylistId === p.id) btn.classList.add("active");
       btn.dataset.id = p.id;
       btn.innerHTML = `<i data-lucide="folder"></i><span title="${escapeHtml(p.title)}">${escapeHtml(p.title)}</span>`;
@@ -1261,14 +1264,14 @@ function renderVideoGrid() {
       <div class="thumbnail-wrapper">
         <img src="${video.thumbnail_url}" alt="Thumbnail">
         ${progressHtml}
-        <button class="play-overlay" title="Play"><i data-lucide="play-circle"></i></button>
+        <div class="thumbnail-play-overlay" title="Play"><div class="thumbnail-play-icon"><i data-lucide="play" style="color:white; margin-left:4px;"></i></div></div>
       </div>
       <div class="video-info">
         <div class="video-title" title="${escapeHtml(video.title)}">${escapeHtml(video.title)}</div>
         <div class="video-channel">${escapeHtml(video.channel_title || '')}</div>
-        <div class="video-meta">
+        <div class="video-card-actions">
           <span>${formatYouTubeTimeAgo(video.published_at || '')}</span>
-          <button class="btn-delete-video" title="Remove video"><i data-lucide="trash-2"></i></button>
+          <button class="btn-card-action btn-delete-video" title="Remove video"><i data-lucide="trash-2"></i></button>
         </div>
       </div>
     `;
