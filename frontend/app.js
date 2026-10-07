@@ -1138,6 +1138,7 @@ async function initApp() {
   if (typeof lucide !== "undefined") {
     lucide.createIcons();
   }
+  setupEventListeners();
   await loadSettings();
   await checkAuthStatus();
   await loadPlaylists();
@@ -1211,7 +1212,7 @@ function renderTabs() {
   favBtn.className = "playlist-tab";
   if (activePlaylistId === "favorites") favBtn.classList.add("active");
   favBtn.dataset.id = "favorites";
-  favBtn.innerHTML = <i data-lucide="star"></i><span title="Favorites">Favorites</span>;
+  favBtn.innerHTML = `<i data-lucide="star"></i><span title="Favorites">Favorites</span>`;
   favBtn.addEventListener("click", () => switchPlaylist("favorites"));
   nav.appendChild(favBtn);
 
