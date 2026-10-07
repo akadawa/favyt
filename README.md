@@ -132,3 +132,24 @@ If you prefer to run the application natively without Docker:
 
 All settings and synced playlists are stored in SQLite inside the container at `/app/data/favyt.db`.  
 Both the `docker-compose.yml` and the manual Docker run command mount a local `./data` folder to `/app/data` to ensure all data is preserved during container updates.
+
+
+### ?? Authentication on a NAS or Local Server (SSH Tunnel)
+
+Google's OAuth 2.0 policy **strictly forbids** using raw local IP addresses (like 192.168.x.x) as Authorized Redirect URIs. It only accepts public https:// domains, with exactly one exception: http://localhost.
+
+If you are hosting FAVYT on a NAS (like Synology) or a local home server, you cannot complete the initial Google Login by accessing the UI via the NAS IP address, because Google will block the redirect. 
+
+**The Solution:** You only need to log in *once*. To do this, you can temporarily tunnel your local PC's localhost to your NAS using SSH:
+
+1. In your **Google Cloud Console**, add the following exact URL as an Authorized Redirect URI:
+   http://localhost:8245/api/auth/callback
+2. Open **PowerShell** or Terminal on your local PC (Windows/Mac/Linux) and run:
+   `ash
+   ssh -L 8245:127.0.0.1:8245 your_username@192.168.x.x
+   `
+   *(Replace your_username with your NAS username and 192.168.x.x with your NAS IP address)*
+3. Keep the terminal window open, and open your web browser on your PC to:
+   **http://localhost:8245**
+4. Enter your Client ID and Secret, and click **Login & Sync**. Google will allow the login because it sees localhost, and the traffic will securely tunnel to your NAS.
+5. Once your playlists are synced, you can close the terminal window. You are permanently logged in. From now on, you can simply use http://192.168.x.x:8245 in your browser to watch videos!
