@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   favyt:
-    build: .
-    image: favyt:latest
+    image: akadawa/favyt:latest
+    # build: .  # Uncomment this line if you want to build the image locally yourself
     container_name: favyt
     restart: unless-stopped
     ports:
