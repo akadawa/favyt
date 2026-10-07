@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAVYT</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Lucide Icons & YouTube IFrame API -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://www.youtube.com/iframe_api"></script>
+</head>
+<body>
+
+  <!-- Top Header Navigation Bar -->
+  <header class="app-header">
+    <div class="header-left">
+      <button class="hamburger-btn" id="btn-toggle-sidebar" title="Toggle playlists sidebar">
+        <i data-lucide="menu"></i>
+      </button>
+      <div class="brand" id="brand-home" title="FAVYT - Home">
+        <img src="favicon.png" class="brand-icon" style="background: none; box-shadow: none; border-radius: 50%;">
+        <span class="brand-title">FAV<span class="highlight">YT</span></span>
+      </div>
+    </div>
+
+    <!-- Header Right Controls: Sync Timestamp, Unified Sync Action & Status Button -->
+    <div class="header-right">
+      <div class="header-sync-info" id="header-sync-info" title="Last successful sync with YouTube">
+        <i data-lucide="clock" class="sync-time-icon"></i>
+        <span id="header-last-sync-time">Last synced: Never</span>
+      </div>
+
+      <button class="btn btn-secondary sync-header-btn" id="btn-sync-header" title="Sync with YouTube">
+        <i data-lucide="refresh-cw"></i>
+        <span>Sync</span>
+      </button>
+
+      <button class="btn btn-secondary header-timer-btn" id="btn-header-timer" title="Toggle Watch Timer / Sleep Timer (Start/Stop)">
+        <i data-lucide="moon"></i>
+        <span id="header-timer-label">Timer: Off</span>
+      </button>
+      
+      <button class="icon-btn" id="btn-open-settings" title="Settings & Playlist Manager">
+        <i data-lucide="settings"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container with Left Sidebar Layout -->
+  <div class="app-layout">
+    
+    <!-- Left Collapsible Sidebar -->
+    <aside class="app-sidebar" id="app-sidebar">
+      <div class="sidebar-search-container">
+        <div class="search-filter-wrapper">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" id="playlist-search-input" placeholder="Search playlists..." autocomplete="off">
+          <button id="clear-pl-search-btn" class="clear-search-btn hidden" title="Clear search">&times;</button>
+        </div>
+      </div>
+
+      <div class="sidebar-scroll-area">
+        <div class="sidebar-section-title">
+          <i data-lucide="list"></i>
+          <span>MY PLAYLISTS</span>
+        </div>
+        <nav class="sidebar-nav" id="playlist-tabs">
+          <!-- Dynamically populated playlist tabs -->
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Content Video Area -->
+    <main class="main-content" id="main-content">
+      
+      <!-- Current Playlist Header Banner -->
+      <section class="current-view-header">
+        <div class="view-title-group">
+          <div class="view-icon" id="current-view-icon">
+            <i data-lucide="folder"></i>
+          </div>
+          <div class="view-title-texts">
+            <div class="view-meta-row">
+              <h1 class="view-title" id="current-view-title">&nbsp;</h1>
+              <span class="view-count-badge" id="current-view-count">&nbsp;</span>
+            </div>
+            <p class="view-subtitle" id="current-view-subtitle"></p>
+          </div>
+        </div>
+
+        <div class="view-actions">
+          <div class="search-filter-wrapper video-search-box">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="video-filter-input" placeholder="Search in this playlist..." autocomplete="off">
+            <button id="clear-search-btn" class="clear-search-btn hidden" title="Clear search">&times;</button>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-play-all">
+            <i data-lucide="play"></i> Play All
+          </button>
+        </div>
+      </section>
+
+      <!-- Video Grid -->
+      <section class="video-grid-container">
+        <div class="video-grid" id="video-grid">
+          <!-- Video Cards dynamically rendered -->
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state hidden" id="empty-state">
+          <div class="empty-state-icon">
+            <i data-lucide="film"></i>
+          </div>
+          <h3 class="empty-title">No videos found</h3>
+          <p class="empty-desc" id="empty-desc">There are no videos in this playlist.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Video Player Modal -->
+  <div class="modal-overlay hidden" id="player-modal">
+    <div class="modal-dialog player-modal-dialog">
+      <div class="modal-header player-modal-header">
+        <div class="player-title-info">
+          <h3 id="player-modal-title">Play Video</h3>
+          <span id="player-modal-channel" class="player-channel-name"></span>
+        </div>
+        <div class="player-modal-controls">
+          <div class="sleep-timer-wrapper" style="position: relative;">
+            <button class="btn btn-secondary btn-sm" id="btn-player-sleep-timer" title="Configure Playback Sleep Timer">
+              <i data-lucide="moon"></i> <span id="player-sleep-timer-label">Sleep Timer: Off</span>
+            </button>
+            <div class="sleep-timer-menu hidden" id="sleep-timer-quick-menu">
+              <div class="sleep-menu-title"><i data-lucide="moon" style="width: 14px; height: 14px;"></i> Sleep Timer</div>
+              <button type="button" class="sleep-menu-item" data-timer="0"><i data-lucide="circle-off"></i> Off</button>
+              <button type="button" class="sleep-menu-item" data-timer="15"><i data-lucide="clock"></i> 15 Minutes</button>
+              <button type="button" class="sleep-menu-item" data-timer="30"><i data-lucide="clock"></i> 30 Minutes</button>
+              <button type="button" class="sleep-menu-item" data-timer="45"><i data-lucide="clock"></i> 45 Minutes</button>
+              <button type="button" class="sleep-menu-item" data-timer="60"><i data-lucide="clock"></i> 60 Minutes (1h)</button>
+              <button type="button" class="sleep-menu-item" data-timer="90"><i data-lucide="clock"></i> 90 Minutes (1.5h)</button>
+              <button type="button" class="sleep-menu-item" data-timer="120"><i data-lucide="clock"></i> 120 Minutes (2h)</button>
+              <div class="sleep-menu-custom-row">
+                <input type="number" id="quick-custom-sleep-timer" min="1" max="720" placeholder="Custom min...">
+                <button type="button" class="btn btn-primary btn-sm" id="btn-apply-quick-custom-timer">Set</button>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="btn-open-in-youtube" title="Open on YouTube">
+            <i data-lucide="external-link"></i> YouTube
+          </button>
+          <button class="icon-btn close-modal-btn" id="btn-close-player">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+      </div>
+      <div class="player-modal-body">
+        <div class="video-iframe-container" id="video-iframe-wrapper">
+          <div id="youtube-player-element"></div>
+        </div>
+        <div class="player-footer-bar">
+          <div class="player-nav-btns">
+            <button class="btn btn-secondary btn-sm" id="btn-player-prev"><i data-lucide="skip-back"></i> Previous</button>
+            <button class="btn btn-secondary btn-sm" id="btn-player-next">Next <i data-lucide="skip-forward"></i></button>
+          </div>
+          <span class="player-index-indicator" id="player-index-indicator">1 / 1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- YouTube Account / API Connect Modal -->
+  <div class="modal-overlay hidden" id="yt-connect-modal">
+    <div class="modal-dialog" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3><i data-lucide="youtube" style="color: #ff0000;"></i> Connect YouTube Account</h3>
+        <button class="icon-btn close-modal-btn" onclick="closeAllModals()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-form">
+        
+        <!-- Connected State -->
+        <div id="auth-connected-view" class="hidden">
+          <div class="account-profile-card">
+            <img id="auth-user-avatar" src="" alt="Avatar" class="account-avatar">
+            <div class="account-info">
+              <h4 id="auth-user-name">Channel Name</h4>
+              <span class="account-badge"><i data-lucide="check-circle"></i> Connected to YouTube Data API</span>
+              <p class="account-last-sync" id="auth-last-sync">Last synced: Never</p>
+            </div>
+          </div>
+
+          <div class="modal-actions" style="justify-content: space-between; margin-top: 16px;">
+            <button type="button" class="btn btn-danger-outline" id="btn-yt-logout">
+              <i data-lucide="log-out"></i> Disconnect
+            </button>
+            <button type="button" class="btn btn-primary" id="btn-yt-sync-now">
+              <i data-lucide="refresh-cw"></i> Sync Now
+            </button>
+          </div>
+        </div>
+
+        <!-- Not Connected / Credentials Form -->
+        <div id="auth-setup-view">
+          <p class="form-desc" style="font-size: 0.88rem; color: #bbb; line-height: 1.5;">Connect your YouTube account via Google API to automatically sync your <strong>Liked Videos (Favorites)</strong> and <strong>Playlists</strong>.</p>
+          
+          <form id="google-credentials-form" style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;">
+            <div class="form-group">
+              <label for="google-client-id">Google Client ID</label>
+              <input type="text" id="google-client-id" placeholder="123456789-xxx.apps.googleusercontent.com" required>
+            </div>
+            <div class="form-group">
+              <label for="google-client-secret">Google Client Secret</label>
+              <input type="password" id="google-client-secret" placeholder="GOCSPX-..." required>
+            </div>
+
+            <div class="settings-box">
+              <h4><i data-lucide="help-circle"></i> Quick Guide for Google API Credentials:</h4>
+              <ol style="padding-left: 18px; margin-top: 6px; line-height: 1.6; font-size: 0.78rem; color: #ccc;">
+                <li>Go to the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color: #3ea6ff;">Google Cloud Console</a>.</li>
+                <li>Under <em>APIs & Services</em>, enable the <strong>YouTube Data API v3</strong>.</li>
+                <li>Under <em>Credentials</em>, create an <strong>OAuth 2.0 Client ID</strong> (Web Application).</li>
+                <li>Add as Authorized Redirect URI: <br><code style="user-select: all;">http://localhost:8245/api/auth/callback</code> (or your NAS address)</li>
+                <li>Enter the <em>Client ID</em> and <em>Client Secret</em> above & click Sign In.</li>
+              </ol>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn btn-outline" onclick="closeAllModals()">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="btn-save-and-login">
+                <i data-lucide="log-in"></i> Sign in with Google
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay hidden" id="settings-modal">
+    <div class="modal-dialog" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3><i data-lucide="settings"></i> Settings & Playlist Manager</h3>
+        <button class="icon-btn close-modal-btn" onclick="closeAllModals()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-form">
+        
+        <div class="form-group">
+          <label for="setting-startup-view">Default Startup Playlist</label>
+          <select id="setting-startup-view">
+            <option value="favorites">Always start with 'Favorites'</option>
+            <option value="last_used">Remember last selected playlist</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="setting-player-mode">Default Playback Mode</label>
+          <select id="setting-player-mode">
+            <option value="modal">Embedded Focus Player (Distraction-free)</option>
+            <option value="youtube_direct">Open directly on YouTube.com in a new tab</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="setting-player-size">Focus Player Size</label>
+          <select id="setting-player-size">
+            <option value="compact">Compact (720px)</option>
+            <option value="medium">Medium (860px)</option>
+            <option value="large">Large (1020px) – Default</option>
+            <option value="theater">Theater (1280px)</option>
+            <option value="cinema">Cinema / Wide (1560px)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="setting-sleep-timer">Playback Sleep Timer / Watch Timer</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="number" id="setting-sleep-timer-hours" min="0" max="12" placeholder="0" style="width: 70px;">
+            <span style="color: var(--text-muted); font-weight: 500;">h</span>
+            <input type="number" id="setting-sleep-timer-minutes" min="0" max="59" placeholder="0" style="width: 70px;">
+            <span style="color: var(--text-muted); font-weight: 500;">m</span>
+          </div>
+          <small style="color: var(--text-muted); font-size: 0.78rem; margin-top: 3px;">
+            Automatically stops playback after the selected time duration.
+          </small>
+        </div>
+
+        <!-- Playlist Visibility Manager -->
+        <div class="form-group" style="margin-top: 8px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <label style="font-weight: 600; color: #fff; font-size: 0.95rem;">
+              <i data-lucide="list-checks" style="width: 16px; height: 16px; vertical-align: middle;"></i> Visible Playlists in Sidebar
+            </label>
+            <span id="playlist-visible-count-badge" class="view-count-badge" style="font-size: 0.78rem;">0 active</span>
+          </div>
+          
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input type="text" id="setting-playlist-search" placeholder="Filter playlists..." style="flex: 1; padding: 7px 12px; font-size: 0.85rem;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-select-all-pls" style="padding: 5px 12px; font-size: 0.78rem;">All</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-deselect-all-pls" style="padding: 5px 12px; font-size: 0.78rem;">None</button>
+          </div>
+
+          <div class="playlist-manager-list" id="settings-playlist-list">
+            <!-- Dynamically populated with playlist checkboxes -->
+          </div>
+        </div>
+
+        <!-- Factory Reset / Danger Zone -->
+        <div class="settings-danger-zone">
+          <div class="danger-zone-content">
+            <div class="danger-zone-title">
+              <i data-lucide="alert-triangle"></i>
+              <span>Factory Reset</span>
+            </div>
+            <p class="danger-zone-desc">Permanently wipe all synced playlists, videos, OAuth credentials, and restore default settings.</p>
+          </div>
+          <button type="button" class="btn btn-danger-outline btn-sm" id="btn-factory-reset">
+            <i data-lucide="trash-2"></i> Reset App
+          </button>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 16px; display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn btn-outline" onclick="closeAllModals()">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="saveSettingsAndClose()">
+            <i data-lucide="check"></i> Save & Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
